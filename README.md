@@ -73,10 +73,10 @@ if doc.Username == request["username"] && doc.Password == request["password"] {
 
 ```
 
-  4. time triggered fetch of new articles and checek for alert
+4. time triggered fetch of new articles and checek for alert
 
-    the t time.Time parameter is something somewhat complicated all you need to know is that it is implicitly used to call the function every x seconds
+the t time.Time parameter is something somewhat complicated all you need to know is that it is implicitly used to call the function every x seconds
 
-    see alertloop and refreshTechCrunchArticles functions towards bottom of file, work through line by line and understnad the algorithm that is happening
-    ###track it step by step and write it down as you go, we'll talk about it for sure :)
+see alertloop and refreshTechCrunchArticles functions towards bottom of file, work through line by line and understnad the algorithm that is happening
+###track it step by step and write it down as you go, we'll talk about it for sure :)
 
