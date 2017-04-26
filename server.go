@@ -142,7 +142,7 @@ type newsAPIResponse struct {
 	Articles []models.Article
 }
 
-func refreshArticles(t time.Time) {
+func refreshTechCrunchArticles(t time.Time) {
 	for companyName := range models.CurrentArticlesMap {
 		resp, _ := http.Get("https://newsapi.org/v1/articles?source=techcrunch&sortBy=latest&apiKey=bd7079b419d3439ca765e70919837e9d")
 		defer resp.Body.Close()
@@ -156,6 +156,10 @@ func refreshArticles(t time.Time) {
 		models.CurrentArticlesMap[companyName] = target.Articles
 	}
 }
+
+// func refreshTheNextWebArticles(t time.Time) {
+// TODO
+// }
 
 func main() {
 	var connErr error
@@ -171,7 +175,7 @@ func main() {
 	router.POST("/api/authenticate", handleLogin)
 	router.POST("/api/register", handleRegister)
 
-	doEvery(250000*time.Millisecond, refreshArticles)
+	doEvery(250000*time.Millisecond, refreshTechCrunchArticles)
 	doEvery(300000*time.Millisecond, alertLoop)
 
 }
