@@ -2,6 +2,14 @@
 
 ## setup
   run go install before running go build
+
+    
+# YOUR TASK
+  your mission should you choose to take it, is to ...
+  1. complete what we talked about last night
+  2. understand what is happening (by reading the rest of this readme) and hunt down any bugs that you might find
+  3. complete the unfinished function called refreshTheNextWebArticles() in a same fashion as refreshTechCrunchArticles() however change the database source to be the next web (don't worry about how it will overwrite from techcrunch, lets just focus on one source. however i'd like you to complete this function to better understand what is happening)
+
 # 1. DAO package
   * so I created a dao (data access object) package that you can use to communicate with mongodb
   * it works by first taking in a collection, then a query / new object to insert, and a resulting taget object just like when we decode objects
@@ -72,9 +80,3 @@ if doc.Username == request["username"] && doc.Password == request["password"] {
     see alertloop and refreshTechCrunchArticles functions towards bottom of file, work through line by line and understnad the algorithm that is happening
     ###track it step by step and write it down as you go, we'll talk about it for sure :)
 
-  
-# YOUR TASK
-  your mission should you choose to take it, is to ...
-  1. complete what we talked about last night
-  2. understand what is happening and hunt down any bugs that you might find
-  3. complete the unfinished function called refreshTheNextWebArticles() in a same fashion as refreshTechCrunchArticles() however change the database source to be the next web (don't worry about how it will overwrite from techcrunch, lets just focus on one source. however i'd like you to complete this function to better understand what is happening)
