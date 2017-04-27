@@ -9,6 +9,7 @@ type User struct {
 	ID        bson.ObjectId `bson:"_id,omitempty"`
 	Username  string
 	Password  string
+	Phone     string
 	Companies []Company
 }
 

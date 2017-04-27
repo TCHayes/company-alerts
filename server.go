@@ -1,9 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -109,8 +115,22 @@ func sendAlert(user string, company string) {
 	// TODO send twilio text
 	return
 }
-func evaluateSentiment(text string) bool {
-	return true
+
+func evaluateSentiment(text string) int64 {
+	fileHandle, _ := os.Create("article_desc.txt") //assuming we're only using one file?
+	defer fileHandle.Close()
+	writer := bufio.NewWriter(fileHandle)
+	fmt.Fprintln(writer, text)
+	writer.Flush()
+	cmd := exec.Command("node", "sentiscript.js", "article_desc.txt")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	score, _ := strconv.ParseInt(strings.TrimSpace(out.String()), 10, 64)
+	return score
 }
 
 func alertLoop(t time.Time) {
@@ -119,10 +139,10 @@ func alertLoop(t time.Time) {
 		for _, company := range companies {
 			articles := company.GetCompanyArticles()
 			var text = ""
-			for _, articles := range articles {
-				text += articles.Description
+			for _, articles := range articles { //why articles vs article
+				text += articles.Description //why += ?
 			}
-			if evaluateSentiment(text) {
+			if evaluateSentiment(text) < 0 {
 				userAlertMap[company.Name] = true
 			}
 			userAlertMap[company.Name] = false
@@ -157,11 +177,28 @@ func refreshTechCrunchArticles(t time.Time) {
 	}
 }
 
-// func refreshTheNextWebArticles(t time.Time) {
-// TODO
-// }
+//TODO NewsAPI appears to return the same cats for each source (Status,
+//	Source, SortBy, Articles) and same API key, so if we abstract out
+//	the source portion of the url, we can use the same refreshArticles func
+//	for whichever sources we wish to include.
+func refreshTheNextWebArticles(t time.Time) {
+	for companyName := range models.CurrentArticlesMap {
+		resp, _ := http.Get("https://newsapi.org/v1/articles?source=the-next-web&sortBy=latest&apiKey=bd7079b419d3439ca765e70919837e9d")
+		defer resp.Body.Close()
+		target := newsAPIResponse{} //initialize an empty newsAPIResponse object/struct?
+		_ = json.NewDecoder(resp.Body).Decode(&target)
+		for i, article := range target.Articles {
+			if !strings.Contains(article.Description, companyName) {
+				target.Articles = append(target.Articles[:i], target.Articles[i+1:]...)
+			}
+		}
+		models.CurrentArticlesMap[companyName] = target.Articles
+	}
+}
 
 func main() {
+	// evaluateSentiment("Hello World")
+	evaluateSentiment("The Go language is great. It's fantastic when it works the way you want")
 	var connErr error
 	session, connErr = mgo.Dial("mongodbstring")
 	check(connErr)
@@ -174,7 +211,7 @@ func main() {
 	router.POST("/api/addalert", handleAddalert)
 	router.POST("/api/authenticate", handleLogin)
 	router.POST("/api/register", handleRegister)
-
+	//
 	doEvery(250000*time.Millisecond, refreshTechCrunchArticles)
 	doEvery(300000*time.Millisecond, alertLoop)
 

@@ -3,7 +3,7 @@
 ## setup
   run go install before running go build
 
-    
+
 # YOUR TASK
   your mission should you choose to take it, is to ...
   1. complete what we talked about last night
@@ -14,7 +14,7 @@
   * so I created a dao (data access object) package that you can use to communicate with mongodb
   * it works by first taking in a collection, then a query / new object to insert, and a resulting taget object just like when we decode objects
   ```go
-              // the collection    // bson.M is just a way to initialize abson object 
+              // the collection    // bson.M is just a way to initialize abson object
                                                         // target is the struct we are stuffing the result into
   func ReadOne(collection *mgo.Collection, query bson.M, target interface{}) bool {
     err := collection.Find(query).One(target)
@@ -22,7 +22,7 @@
   }
   ```
 # 2. Model Package
-  * in here we got our structs that we will be using throughout our app, mostly just definitions but from outside of the models package you 
+  * in here we got our structs that we will be using throughout our app, mostly just definitions but from outside of the models package you
     can access a struct and their functions through models.Structname
   * you can also access the currentarticlesmap and other things through models.CurrentArticlesMap (it is capitilized and hence you can access publicly)
   * models.CurrentUsers maps userIDs to companies
@@ -79,4 +79,3 @@ the t time.Time parameter is something somewhat complicated all you need to know
 
 see alertloop and refreshTechCrunchArticles functions towards bottom of file, work through line by line and understnad the algorithm that is happening
 ###track it step by step and write it down as you go, we'll talk about it for sure :)
-

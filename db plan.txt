@@ -1,0 +1,56 @@
+// Will I clear out the server currentCompanyMap articles x times per day?
+
+
+MongoDB will have only one, small collection:
+  Users Collection Document
+  {
+    userId: 23432432,
+    watchedCompanies: [
+      "AMD",
+      "Apple",
+      "Amazon",
+      "Tesla",
+      "Google",
+      "Exxon"
+    ],
+                        //users can pick if they want email/text alerts for neg or pos news
+    textAlerts: true,   //for MVP, alerts will be set to 85% pos/neg for texts
+    emailAlerts: true   //for MVP, alerts will be set to 70% pos/neg for emails
+  }
+
+
+On server startup, access users DB collection, and create server cache (Go map)
+  to keep track of which companies each user is watching:
+  currentCompanyMap = {
+    userID: {
+      companies: []Companies
+    }
+  }
+
+Within the Companies object in the server CurrentCompanyMap, each entry will look like:
+Amazon: [
+          {
+            sentiment: 76,                  //NOT SURE HOW/WHEN TO SET THIS
+            headline: "something crazy at Amazon",
+            author: "Taylor Hatmaker"
+            description: "According to newly unsealed documents, a federal court",
+            url: https://techcrunch.com/2017/04/24/adobe-gag-order-search-warrant-los-angeles-court/",
+            publishedAt: "2017-04-24T20:05:03Z"
+          },
+          {
+            sentiment: 36,                  //NOT SURE HOW/WHEN TO SET THIS
+            headline: "something crazy at Amazon",
+            author: "Taylor Hatmaker"
+            description: "According to newly unsealed documents, a federal court",
+            url: https://techcrunch.com/2017/04/24/adobe-gag-order-search-warrant-los-angeles-court/",
+            publishedAt: "2017-04-24T20:05:03Z"
+          },
+          {
+            sentiment: 86,                  //NOT SURE HOW/WHEN TO SET THIS
+            headline: "something crazy at Amazon",
+            author: "Taylor Hatmaker"
+            description: "According to newly unsealed documents, a federal court",
+            url: https://techcrunch.com/2017/04/24/adobe-gag-order-search-warrant-los-angeles-court/",
+            publishedAt: "2017-04-24T20:05:03Z"
+          }
+        ]
