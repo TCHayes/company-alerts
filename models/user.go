@@ -10,7 +10,7 @@ type User struct {
 	Username  string
 	Password  string
 	Phone     string
-	Companies []Company
+	Companies []Company `bson:"companies"`
 }
 
 func (u User) getUserCompanies() []Company {

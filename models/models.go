@@ -16,9 +16,11 @@ func stringInSlice(a string, list []Company) bool {
 }
 
 // AddWatchedCompany adds a company to the watch list for a given user
-func AddWatchedCompany(companyName string, user User) {
-	var isInList = stringInSlice(companyName, CurrentUsers[user.Username])
-	if !isInList {
-		CurrentUsers[user.Username] = append(CurrentUsers[user.Username], Company{Name: companyName})
+func AddWatchedCompanies(companyNames []string, user User) {
+	companies := []Company{}
+	for _, c := range companyNames {
+		companies = append(companies, Company{Name: c})
 	}
+	CurrentUsers[user.Username] = companies
+	user.Companies = companies
 }

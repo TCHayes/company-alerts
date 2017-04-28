@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -29,6 +30,7 @@ func Create(collection *mgo.Collection, object bson.M) bool {
 // ReadOne reads one item that matches the query and writes it to the target struct.
 // Returns a bool based on whether or not function executed correctly.
 func ReadOne(collection *mgo.Collection, query bson.M, target interface{}) bool {
+	fmt.Println(collection.Find(query).Count())
 	err := collection.Find(query).One(target)
 	return check(err)
 }

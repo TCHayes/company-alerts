@@ -2,8 +2,7 @@ package models
 
 // Company struct ...
 type Company struct {
-	Name   string
-	Ticker string
+	Name string `bson:"name"`
 }
 
 // GetCompanyArticles ...

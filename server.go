@@ -23,8 +23,8 @@ import (
 var session *mgo.Session
 
 type addAlertRequest struct {
-	Username string
-	Company  string
+	Username  string
+	Companies []string
 }
 
 func check(err error) {
@@ -46,14 +46,19 @@ func createFailureResponse(reason string, w *http.ResponseWriter) {
 }
 
 func bsonify(r *http.Request) bson.M {
+	// bsonify takes in JSON and returns BSON?
+	// M is a convenient alias (type) for a map[string]interface{} map,
+	//	useful for dealing with BSON in a native way.
 	body := bson.M{}
+	//check just makes sure there isn't an error with whatever code is passed in
+	//is the argument within Decode (body) where the decoded info is stored?
 	check(json.NewDecoder(r.Body).Decode(&body))
 	return body
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
-	c := session.DB("company-alerts").C("user")
+	c := session.DB("company-alerts").C("users")
 	request := bsonify(r)
 	doc := models.User{}
 	readSuccess := dao.ReadOne(c, request, &doc)
@@ -71,7 +76,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func handleRegister(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
-	c := session.DB("company-alerts").C("user")
+	c := session.DB("company-alerts").C("users")
 	request := bsonify(r)
 
 	existsInDB := dao.CheckExisting(c, request, models.User{})
@@ -88,21 +93,32 @@ func handleRegister(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 }
 
 func handleAddalert(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// set up headers
 	w.Header().Set("Content-Type", "application/json")
-	c := session.DB("company-alerts").C("user")
-
+	// connect to DB?
+	c := session.DB("company-alerts").C("users")
+	// create new, empty instance of addAlertRequest struct
 	body := addAlertRequest{}
+	// decode the request Body and store the decoded bson format in local body var
 	_ = json.NewDecoder(r.Body).Decode(&body)
-
+	// create new, empty instance of User struct
 	user := models.User{}
+	// look to make sure username exists in DB
 	readSuccess := dao.ReadOne(c, bson.M{"username": body.Username}, &user)
+	fmt.Println(readSuccess)
 	if readSuccess == true {
-		models.AddWatchedCompany(body.Company, user)
+		// if the user is found in the DB, call the AddWatchedCompany method
+		models.AddWatchedCompanies(body.Companies, user)
+		dao.UpdateOne(c, bson.M{"username": body.Username}, bson.M{"$set": bson.M{"companies": body.Companies}})
 		createResponse(bson.M{"success": true}, &w)
 		return
 	}
 	createFailureResponse("Something went wrong", &w)
 	return
+}
+
+func handleIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	http.FileServer(http.Dir("./views"))
 }
 
 func doEvery(d time.Duration, f func(time.Time)) {
@@ -117,7 +133,7 @@ func sendAlert(user string, company string) {
 }
 
 func evaluateSentiment(text string) int64 {
-	fileHandle, _ := os.Create("article_desc.txt") //assuming we're only using one file?
+	fileHandle, _ := os.Create("article_desc.txt")
 	defer fileHandle.Close()
 	writer := bufio.NewWriter(fileHandle)
 	fmt.Fprintln(writer, text)
@@ -139,13 +155,14 @@ func alertLoop(t time.Time) {
 		for _, company := range companies {
 			articles := company.GetCompanyArticles()
 			var text = ""
-			for _, articles := range articles { //why articles vs article
-				text += articles.Description //why += ?
+			for _, article := range articles {
+				text += article.Description
 			}
 			if evaluateSentiment(text) < 0 {
 				userAlertMap[company.Name] = true
+			} else {
+				userAlertMap[company.Name] = false
 			}
-			userAlertMap[company.Name] = false
 		}
 		for company, needAlert := range userAlertMap {
 			if needAlert {
@@ -200,7 +217,7 @@ func main() {
 	// evaluateSentiment("Hello World")
 	evaluateSentiment("The Go language is great. It's fantastic when it works the way you want")
 	var connErr error
-	session, connErr = mgo.Dial("mongodbstring")
+	session, connErr = mgo.Dial("mongodb://terry:terrypass@ds059284.mlab.com:59284/company-alerts") //TODO store this in env
 	check(connErr)
 
 	defer session.Close()
@@ -211,8 +228,10 @@ func main() {
 	router.POST("/api/addalert", handleAddalert)
 	router.POST("/api/authenticate", handleLogin)
 	router.POST("/api/register", handleRegister)
+	router.GET("/", handleIndex)
 	//
-	doEvery(250000*time.Millisecond, refreshTechCrunchArticles)
-	doEvery(300000*time.Millisecond, alertLoop)
+	// doEvery(250000*time.Millisecond, refreshTechCrunchArticles)
+	// doEvery(300000*time.Millisecond, alertLoop)
+	http.ListenAndServe(":8080", router)
 
 }
