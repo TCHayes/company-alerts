@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/cors"
+
 	"github.com/TCHayes/company-alerts/dao"
 	"github.com/TCHayes/company-alerts/models"
 	"github.com/julienschmidt/httprouter"
@@ -229,9 +231,13 @@ func main() {
 	router.POST("/api/authenticate", handleLogin)
 	router.POST("/api/register", handleRegister)
 	router.GET("/", handleIndex)
+
+	// Add CORS support (Cross Origin Resource Sharing)
+	handler := cors.Default().Handler(router)
+	http.ListenAndServe(":4000", handler)
 	//
 	// doEvery(250000*time.Millisecond, refreshTechCrunchArticles)
 	// doEvery(300000*time.Millisecond, alertLoop)
-	http.ListenAndServe(":8080", router)
+	// http.ListenAndServe(":4000", router)
 
 }
